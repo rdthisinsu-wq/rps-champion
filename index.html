@@ -1,0 +1,203 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>가위바위보 챔피언</title>
+<style>
+:root{color-scheme:light}*{box-sizing:border-box}html,body{margin:0;min-height:100%;font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:#f4ead8;color:#171717}body{display:flex;align-items:center;justify-content:center;padding:18px}#app{position:relative;width:min(900px,100%);min-height:680px;background:#fff7e8;border:5px solid #171717;border-radius:24px;box-shadow:12px 12px 0 #171717;overflow:hidden}.money{position:absolute;right:18px;top:18px;background:#ffd84d;border:4px solid #171717;border-radius:14px;padding:9px 14px;font-weight:900;font-size:18px;z-index:4}.screen{min-height:680px;padding:42px 28px 28px;display:none;align-items:center;justify-content:center;flex-direction:column;text-align:center}.screen.active{display:flex}.title{font-size:clamp(38px,8vw,72px);font-weight:1000;letter-spacing:-3px;margin:0 0 10px}.subtitle{font-weight:800;color:#5b5447;margin:0 0 26px}.btn{border:4px solid #171717;background:#fff;border-radius:14px;padding:13px 22px;font:900 18px inherit;cursor:pointer;box-shadow:5px 5px 0 #171717;transition:.12s}.btn:active{transform:translate(4px,4px);box-shadow:1px 1px 0 #171717}.primary{background:#ff6464}.menuGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;width:min(500px,100%)}.menuGrid .btn{min-height:58px}.choiceRow{display:flex;gap:18px;justify-content:center;flex-wrap:wrap;margin:24px 0}.choice{width:180px;height:180px;border-radius:50%;border:5px solid #171717;background:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:8px 8px 0 #171717;transition:.12s}.choice:hover{transform:translateY(-5px)}.choice:active{transform:translate(6px,6px);box-shadow:2px 2px 0 #171717}.choice svg{width:92px;height:92px}.labels{display:flex;gap:95px;justify-content:center;font-weight:1000;margin-top:-8px}.versus{font-size:26px;font-weight:1000;margin:8px 0}.result{min-height:60px;font-size:28px;font-weight:1000;margin:10px 0}.roundInfo{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin:10px 0}.pill{background:#fff;border:3px solid #171717;border-radius:12px;padding:7px 10px;font-weight:900}.table{width:min(650px,100%);border-collapse:collapse;margin:18px 0 24px;background:#fff;border:4px solid #171717;overflow:hidden}.table th,.table td{padding:12px 10px;border-bottom:2px solid #ddd;font-weight:900}.table th{background:#171717;color:#fff}.rankMe{background:#fff0a8}.reward{font-size:20px;font-weight:1000;background:#b8f5b8;border:3px solid #171717;padding:10px 14px;border-radius:12px}.fail{background:#ffb8b8}.hint{margin-top:12px;color:#6a6256;font-weight:800}.status{min-height:24px;font-weight:900;margin-top:6px}@media(max-width:700px){#app,.screen{min-height:620px}.choice{width:135px;height:135px}.choice svg{width:68px;height:68px}.labels{gap:50px}.money{font-size:15px;right:12px;top:12px}.screen{padding:34px 16px 22px}}
+</style>
+</head>
+<body>
+<div id="app">
+  <div class="money" id="money">🪙 100원</div>
+
+  <section class="screen active" id="home">
+    <h1 class="title">가위바위보 챔피언</h1>
+    <p class="subtitle">연승할수록 다음 승리 보상이 2배!</p>
+    <div class="menuGrid">
+      <button class="btn primary" id="startBtn">게임 시작</button>
+      <button class="btn" id="rankBtn">랭킹보드</button>
+    </div>
+    <div class="hint">현재 돈과 전적은 이 브라우저에 자동 저장돼요.</div>
+  </section>
+
+  <section class="screen" id="menu">
+    <h2 class="title" style="font-size:48px">메뉴</h2>
+    <div class="menuGrid">
+      <button class="btn primary" id="menuStart">게임 시작</button>
+      <button class="btn" id="menuRank">랭킹보드</button>
+      <button class="btn" id="resetBtn">기록 초기화</button>
+    </div>
+  </section>
+
+  <section class="screen" id="rank">
+    <h2 class="title" style="font-size:46px">🏆 랭킹보드</h2>
+    <table class="table">
+      <thead><tr><th>순위</th><th>플레이어</th><th>이긴 횟수</th><th>보유 돈</th></tr></thead>
+      <tbody id="rankBody"></tbody>
+    </table>
+    <button class="btn back" id="rankBack">메뉴로</button>
+  </section>
+
+  <section class="screen" id="game">
+    <h2 style="margin:0;font-size:34px">가위 · 바위 · 보</h2>
+    <div class="roundInfo">
+      <div class="pill" id="wins">연승 0</div>
+      <div class="pill" id="reward">다음 승리 +100원</div>
+    </div>
+    <div class="choiceRow">
+      <button class="choice" data-choice="rock" aria-label="바위">
+        <svg viewBox="0 0 100 100" fill="none" aria-hidden="true"><path d="M30 70 24 44c-2-8 4-15 12-13l8 8V25c0-6 8-9 12-4l3 18 2-20c1-7 10-7 12 0l2 21 2-14c1-7 10-6 11 1l-1 29c-1 17-13 30-30 31H45c-7 0-13-5-15-16Z" fill="#d7d7d7" stroke="#171717" stroke-width="5"/></svg>
+      </button>
+      <button class="choice" data-choice="paper" aria-label="보">
+        <svg viewBox="0 0 100 100" fill="none" aria-hidden="true"><path d="M28 74V39c0-7 10-8 12-1l1 16V23c0-7 10-8 11-1v33-35c0-7 10-7 11 0v35-30c0-7 10-7 11 0v31-22c0-7 10-7 11 0v26c0 17-11 29-28 32l-11 2c-7 1-18-4-18-18Z" fill="#fff" stroke="#171717" stroke-width="5"/></svg>
+      </button>
+      <button class="choice" data-choice="scissors" aria-label="가위">
+        <svg viewBox="0 0 100 100" fill="none" aria-hidden="true"><circle cx="34" cy="71" r="11" fill="#ffd84d" stroke="#171717" stroke-width="5"/><circle cx="66" cy="71" r="11" fill="#ffd84d" stroke="#171717" stroke-width="5"/><path d="M39 63 77 25M60 63 23 25" stroke="#171717" stroke-width="9" stroke-linecap="round"/></svg>
+      </button>
+    </div>
+    <div class="labels"><span>바위</span><span>보</span><span>가위</span></div>
+    <div class="versus" id="versus">무엇을 낼까요?</div>
+    <div class="result" id="result"></div>
+    <button class="btn" id="gameMenu">메뉴로</button>
+  </section>
+
+  <section class="screen" id="over">
+    <div id="overIcon" style="font-size:72px">🎉</div>
+    <h2 class="title" id="overTitle" style="font-size:54px">승리!</h2>
+    <div class="reward" id="overReward">+100원</div>
+    <p class="subtitle" id="overText">다음 승리는 200원!</p>
+    <div class="menuGrid">
+      <button class="btn primary" id="againBtn">다시 시작</button>
+      <button class="btn" id="overMenu">메뉴로</button>
+    </div>
+  </section>
+</div>
+<script>
+(() => {
+  const STORAGE_KEY = 'rps-champion-save-v1';
+  const names = { rock:'바위', paper:'보', scissors:'가위' };
+  const winMap = { rock:'scissors', paper:'rock', scissors:'paper' };
+  const defaultState = { money:100, wins:0, streak:0 };
+  let state = loadState();
+  let roundLocked = false;
+
+  const $ = id => document.getElementById(id);
+  const screens = [...document.querySelectorAll('.screen')];
+
+  function loadState(){
+    try { return { ...defaultState, ...JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}') }; }
+    catch { return { ...defaultState }; }
+  }
+
+  function saveState(){
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    renderAll();
+  }
+
+  function show(id){
+    screens.forEach(screen => screen.classList.remove('active'));
+    $(id).classList.add('active');
+    renderAll();
+  }
+
+  function nextReward(){
+    return 100 * Math.pow(2, state.streak);
+  }
+
+  function renderAll(){
+    $('money').textContent = `🪙 ${state.money}원`;
+    $('wins').textContent = `연승 ${state.streak}`;
+    $('reward').textContent = `다음 승리 +${nextReward()}원`;
+    renderRank();
+  }
+
+  function renderRank(){
+    const bots = [
+      { name:'번개손', wins:12, money:6400 },
+      { name:'가위왕', wins:9, money:3600 },
+      { name:'바위장인', wins:7, money:1900 },
+      { name:'보의신', wins:5, money:900 }
+    ];
+    const all = [...bots, { name:'나', wins:state.wins, money:state.money }]
+      .sort((a,b) => b.wins - a.wins || b.money - a.money);
+    $('rankBody').innerHTML = all.map((player, index) => `
+      <tr class="${player.name === '나' ? 'rankMe' : ''}">
+        <td>${index + 1}</td><td>${player.name}${player.name === '나' ? ' ★' : ''}</td>
+        <td>${player.wins}</td><td>${player.money}원</td>
+      </tr>`).join('');
+  }
+
+  function startGame(){
+    roundLocked = false;
+    $('versus').textContent = '무엇을 낼까요?';
+    $('result').textContent = '';
+    show('game');
+  }
+
+  function play(choice){
+    if(roundLocked) return;
+    roundLocked = true;
+    const opponent = ['rock','paper','scissors'][Math.floor(Math.random() * 3)];
+    $('versus').textContent = `나: ${names[choice]}  VS  상대: ${names[opponent]}`;
+
+    if(choice === opponent){
+      $('result').textContent = '🤝 무승부! 돈 변화 없음';
+      setTimeout(() => { roundLocked = false; $('result').textContent = '다시 선택하세요'; }, 650);
+      return;
+    }
+
+    const won = winMap[choice] === opponent;
+    if(won){
+      const reward = nextReward();
+      state.money += reward;
+      state.wins += 1;
+      state.streak += 1;
+      saveState();
+      $('result').textContent = `🎉 승리! +${reward}원`;
+      setTimeout(() => endRound(true, reward), 650);
+    } else {
+      state.streak = 0;
+      saveState();
+      $('result').textContent = '💥 실패! 이번 판 보상 0원';
+      setTimeout(() => endRound(false, 0), 650);
+    }
+  }
+
+  function endRound(won, reward){
+    $('overIcon').textContent = won ? '🎉' : '💥';
+    $('overTitle').textContent = won ? '승리!' : '실패!';
+    $('overReward').textContent = won ? `+${reward}원` : '+0원';
+    $('overReward').className = `reward${won ? '' : ' fail'}`;
+    $('overText').textContent = won
+      ? `다음 승리는 ${nextReward()}원!`
+      : '실패! 이번 판은 돈을 받지 못합니다.';
+    show('over');
+    roundLocked = false;
+  }
+
+  $('startBtn').onclick = startGame;
+  $('menuStart').onclick = startGame;
+  $('rankBtn').onclick = () => show('rank');
+  $('menuRank').onclick = () => show('rank');
+  $('rankBack').onclick = () => show('menu');
+  $('gameMenu').onclick = () => show('menu');
+  $('overMenu').onclick = () => show('menu');
+  $('againBtn').onclick = startGame;
+  $('resetBtn').onclick = () => {
+    if(confirm('저장된 돈과 전적을 모두 초기화할까요?')){
+      state = { ...defaultState };
+      saveState();
+      show('home');
+    }
+  };
+  document.querySelectorAll('.choice').forEach(button => {
+    button.onclick = () => play(button.dataset.choice);
+  });
+
+  renderAll();
+})();
+</script>
+</body>
+</html>
